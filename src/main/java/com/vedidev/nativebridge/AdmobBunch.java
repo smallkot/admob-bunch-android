@@ -1,113 +1,1 @@
-package com.vedidev.nativebridge;
-
-import com.google.android.gms.ads.*;
-import android.content.Context;
-import android.widget.LinearLayout;
-
-import org.json.JSONObject;
-import com.vedidev.nativebridge.Bunch;
-import com.vedidev.nativebridge.ProcessorEngine;
-
-/**
- * @author smallkot
- *         date 19/12/14
- */
-
-@SuppressWarnings("UnusedDeclaration")
-public class AdmobBunch implements Bunch {
-    private Context context;
-    private AdView adView;
-    private InterstitialAd interstitial;
-
-    public AdmobBunch() {
-        registerProcessor("createBanner", new ProcessorEngine.CallHandler() {
-            @Override
-            public void handle(JSONObject params, JSONObject retParams) throws Exception {
-                String adUnitID = params.getString("adUnitID");
-                int adSizeBanner = params.getInt("adSizeBanner");
-                double mX = params.getDouble("mX");
-                double mY = params.getDouble("mY");
-                createBanner(adUnitID);
-            }
-        });
-
-        registerProcessor("showBanner", new ProcessorEngine.CallHandler() {
-            @Override
-            public void handle(JSONObject params, JSONObject retParams) throws Exception {
-                showBanner();
-            }
-        });
-
-        registerProcessor("createInterstitial", new ProcessorEngine.CallHandler() {
-            @Override
-            public void handle(JSONObject params, JSONObject retParams) throws Exception {
-                String adUnitID = params.getString("adUnitID");
-                createInterstitial(adUnitID);
-            }
-        });
-
-        registerProcessor("showInterstitial", new ProcessorEngine.CallHandler() {
-            @Override
-            public void handle(JSONObject params, JSONObject retParams) throws Exception {
-                showInterstitial();
-            }
-        });
-
-    }
-
-    private void createBanner(String adUnitID) {
-        // Создание экземпляра adView.
-        adView = new AdView(this.context);
-        adView.setAdUnitId(adUnitID);
-        adView.setAdSize(AdSize.BANNER);
-
-        // Поиск разметки LinearLayout (предполагается, что ей был присвоен
-        // атрибут android:id="@+id/mainLayout").
-        LinearLayout layout = new LinearLayout(this.context);//(LinearLayout)findViewById(R.id.mainLayout);
-
-        // Добавление в разметку экземпляра adView.
-        layout.addView(adView);
-    }
-
-    private void showBanner() {
-        // Инициирование общего запроса.
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // Загрузка adView с объявлением.
-        adView.loadAd(adRequest);
-    }
-
-    private void createInterstitial(String adUnitID) {
-        // Создание межстраничного объявления.
-        interstitial = new InterstitialAd(this.context);
-        interstitial.setAdUnitId(adUnitID);
-
-        // Создание запроса объявления.
-        AdRequest adRequest = new AdRequest.Builder().build();
-
-        // Запуск загрузки межстраничного объявления.
-        if(adRequest!=null && interstitial !=null)
-            interstitial.loadAd(adRequest);
-    }
-
-    private void showInterstitial() {
-        // Загрузка adView с объявлением.
-        displayInterstitial();
-    }
-
-    // Вызовите displayInterstitial(), когда будете готовы показать межстраничное объявление.
-    public void displayInterstitial() {
-        if (interstitial.isLoaded()) {
-            interstitial.show();
-        }
-    }
-
-    @Override
-    public void setContext(Context context) {
-        this.context = context;
-    }
-
-    private void registerProcessor(String key, ProcessorEngine.CallHandler callHandler) {
-        ProcessorEngine.getInstance().registerProcessor("AdmobBunch", key, callHandler);
-    }
-}
-
+package com.vedidev.nativebridge;import com.google.android.gms.ads.InterstitialAd;import com.google.android.gms.ads.AdView;import com.google.android.gms.ads.AdSize;import com.google.android.gms.ads.AdRequest;import com.google.android.gms.ads.*;import android.app.Activity;import android.content.Context;import android.content.Intent;import android.graphics.Color;import android.util.Log;import android.widget.LinearLayout;import android.view.ViewGroup.LayoutParams;import android.widget.RelativeLayout;import android.view.Gravity;import android.view.View;import org.json.JSONObject;import com.vedidev.nativebridge.Bunch;import com.vedidev.nativebridge.ProcessorEngine;/** * @author smallkot *         date 19/12/14 */@SuppressWarnings("UnusedDeclaration")public class AdmobBunch implements Bunch {    private static AdmobBunch  _appActiviy;    private AdView adView;    private static RelativeLayout _layout = null;    private RelativeLayout _bannerLayout = null;    final private static int kGADAdSizeInvalid = 0;    final private static int kGADAdSizeBanner = 1;    final private static int kGADAdSizeMediumRectangle = 2;    final private static int kGADAdSizeFullBanner = 3;    final private static int kGADAdSizeLeaderboard = 4;    final private static int kGADAdSizeSkyscraper = 5;    final private static int kGADAdSizeSmartBannerPortrait = 6;    final private static int kGADAdSizeSmartBannerLandscape = 7;    private static final int kBannerGravityNone = -1;    private static final int kBannerGravityTopLeft = 0;    private static final int kBannerGravityCenterLeft = 1;    private static final int kBannerGravityBottomLeft = 2;    private static final int kBannerGravityTopCenter = 3;    private static final int kBannerGravityCenter = 4;    private static final int kBannerGravityBottomCenter = 5;    private static final int kBannerGravityTopRight = 6;    private static final int kBannerGravityCenterRight = 7;    private static final int kBannerGravityBottomRight = 8;    private Context context;    private Activity activity;    private InterstitialAd interstitial;    public AdmobBunch() {        registerProcessor("createBanner", new ProcessorEngine.CallHandler() {            @Override            public void handle(JSONObject params, JSONObject retParams) throws Exception {                String adUnitID = params.getString("adUnitID");                int adSizeBanner = params.getInt("adSizeBanner");                double mX = params.getDouble("mX");                double mY = params.getDouble("mY");                createBanner(adUnitID);            }        });        registerProcessor("showBanner", new ProcessorEngine.CallHandler() {            @Override            public void handle(JSONObject params, JSONObject retParams) throws Exception {                //showBanner();                showAd(0, 0, 640, 800, kBannerGravityTopCenter);            }        });        registerProcessor("hideBanner", new ProcessorEngine.CallHandler() {            @Override            public void handle(JSONObject params, JSONObject retParams) throws Exception {                hideBanner();            }        });        registerProcessor("createInterstitial", new ProcessorEngine.CallHandler() {            @Override            public void handle(JSONObject params, JSONObject retParams) throws Exception {                String adUnitID = params.getString("adUnitID");                createInterstitial(adUnitID);            }        });        registerProcessor("showInterstitial", new ProcessorEngine.CallHandler() {            @Override            public void handle(JSONObject params, JSONObject retParams) throws Exception {                showInterstitial();            }        });    }    private void createBanner(final String adUnitID) {        _appActiviy = this;        if(this.activity!=null)        {            this.activity.runOnUiThread(new Runnable() {                @Override                public void run() {                    _appActiviy.adView = new AdView(_appActiviy.activity);                    _appActiviy.adView.setAdSize(AdSize.BANNER);                    _appActiviy.adView.setAdUnitId(adUnitID);                    AdRequest adRequest = new AdRequest.Builder()                            .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)                            .addTestDevice("HASH_DEVICE_ID")                            .build();                    _appActiviy.adView.loadAd(adRequest);                    _appActiviy.adView.setBackgroundColor(Color.BLACK);                    _appActiviy.adView.setBackgroundColor(0);                }            });        }    }    public void hideBanner()    {        _appActiviy.activity.runOnUiThread(new Runnable() {            @Override            public void run() {                _appActiviy.adView.setVisibility(View.INVISIBLE);            }        });    }    public void showAd(final int x, final int y, final int width, final int height, final int theGravity)    {        _appActiviy.activity.runOnUiThread(new Runnable() {            @Override            public void run() {                _appActiviy.adView.setVisibility(View.VISIBLE);                if (_layout != null && _appActiviy._bannerLayout != null && _appActiviy.adView.getParent() != null) {                    _appActiviy._bannerLayout.removeView(_appActiviy.adView);                    _layout.removeView(_appActiviy._bannerLayout);                    _appActiviy._bannerLayout = null;                }                if (_layout == null) {                    _layout = new RelativeLayout(_appActiviy.activity);                    _appActiviy.activity.addContentView(_layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));                    _layout.setGravity(Gravity.TOP | Gravity.LEFT);                }                if (_appActiviy.adView.getParent() == null) {                    //View parent = (View)_layout.getParent();                    //int width = _appActiviy.getDisplaySize(_appActiviy.getWindowManager().getDefaultDisplay()).x;                    //int height = _appActiviy.getDisplaySize(_appActiviy.getWindowManager().getDefaultDisplay()).y;                    _appActiviy._bannerLayout = new RelativeLayout(_appActiviy.activity);                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);                    if (theGravity == -1) {                        params.leftMargin = x;                        params.topMargin = y;//parent.getHeight() + y - height;                    }                    _layout.addView(_appActiviy._bannerLayout, params);                    int gravity = theGravity;                    switch (gravity) {                        case kBannerGravityCenterLeft:                            _appActiviy._bannerLayout.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);                            break;                        case kBannerGravityBottomLeft:                            _appActiviy._bannerLayout.setGravity(Gravity.BOTTOM | Gravity.LEFT);                            break;                        case kBannerGravityTopCenter:                            _appActiviy._bannerLayout.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);                            break;                        case kBannerGravityCenter:                            _appActiviy._bannerLayout.setGravity(Gravity.CENTER);                            break;                        case kBannerGravityBottomCenter:                            _appActiviy._bannerLayout.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);                            break;                        case kBannerGravityTopRight:                            _appActiviy._bannerLayout.setGravity(Gravity.TOP | Gravity.RIGHT);                            break;                        case kBannerGravityCenterRight:                            _appActiviy._bannerLayout.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);                            break;                        case kBannerGravityBottomRight:                            _appActiviy._bannerLayout.setGravity(Gravity.BOTTOM | Gravity.RIGHT);                            break;                        case kBannerGravityTopLeft:                        default:                            _appActiviy._bannerLayout.setGravity(Gravity.TOP | Gravity.LEFT);                            break;                    }                    _appActiviy._bannerLayout.addView(_appActiviy.adView, new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));                }            }        });    }    private void showBanner() {        // Инициирование общего запроса.        //AdRequest adRequest = new AdRequest.Builder().build();        // Загрузка adView с объявлением.        //adView.loadAd(adRequest);        adView.setVisibility(AdView.VISIBLE);    }    private void createInterstitial(final String adUnitID) {        _appActiviy = this;        if(this.activity!=null) {            this.activity.runOnUiThread(new Runnable() {                @Override                public void run() {                    // Создание межстраничного объявления.                    _appActiviy.interstitial = new InterstitialAd(_appActiviy.activity);                    _appActiviy.interstitial.setAdUnitId(adUnitID);                    // Создание запроса объявления.                    AdRequest adRequest = new AdRequest.Builder().build();                    // Запуск загрузки межстраничного объявления.                    _appActiviy.interstitial.loadAd(adRequest);                }            });        }    }    private void showInterstitial() {        // Загрузка adView с объявлением.        _appActiviy.activity.runOnUiThread(new Runnable() {            @Override            public void run() {                _appActiviy.displayInterstitial();            }        });    }    // Вызовите displayInterstitial(), когда будете готовы показать межстраничное объявление.    public void displayInterstitial() {        _appActiviy.activity.runOnUiThread(new Runnable() {            @Override            public void run() {                if (_appActiviy.interstitial.isLoaded()) {                    _appActiviy.interstitial.show();                }            }        });    }    @Override    public void setContext(Context context) {        this.context = context;    }    public void setActivity(Activity activity)    {        this.activity = activity;    }    private void registerProcessor(String key, ProcessorEngine.CallHandler callHandler) {        ProcessorEngine.getInstance().registerProcessor("AdmobBunch", key, callHandler);    }}
